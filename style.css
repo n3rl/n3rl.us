@@ -1,0 +1,18 @@
+html {
+    margin:    0 auto;
+    max-width: 500px;
+} 
+
+body {
+    font-family: 'Courier New', monospace;
+    background-color: rgb(4, 64, 73);
+    color: rgb(11, 220, 150);
+}
+
+h1 {
+    text-align: center;
+}
+
+a {
+    color: rgb(7, 183, 165);
+}
