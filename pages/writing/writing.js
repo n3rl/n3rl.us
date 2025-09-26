@@ -25,7 +25,7 @@ function addPoem(poem) {
 
     // add each stanza
     stanzas.forEach(stanza => {
-      let stanzaNode = document.createElement("p");
+      let stanzaNode = document.createElement("pre");
       stanzaNode.innerHTML = stanza.replaceAll("\r\n", "<br>")
       poemContainer.appendChild(stanzaNode);
     });

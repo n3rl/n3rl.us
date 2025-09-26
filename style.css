@@ -16,3 +16,7 @@ h1 {
 a {
     color: rgb(7, 183, 165);
 }
+
+header {
+	text-align: center;
+}
