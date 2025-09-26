@@ -28,13 +28,8 @@ function addPoem(poem) {
 
     // stanzas
     stanzas.forEach(stanza => {
-<<<<<<< HEAD
-      let stanzaNode = document.createElement("pre");
-      stanzaNode.innerHTML = stanza.replaceAll("\r\n", "<br>")
-=======
       let stanzaNode = document.createElement("p");
       stanzaNode.innerHTML = stanza.replaceAll("\n", "<br>");
->>>>>>> 890c3fcb810929a5f56a8db94f80210f8a23956d
       poemContainer.appendChild(stanzaNode);
     });
 
