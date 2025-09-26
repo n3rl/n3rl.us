@@ -9,14 +9,9 @@ fetch("./poetry.txt")
   .catch((e) => console.error(e));
 
 function addPoem(poem) {
-    // get title and stanzas
-    poem = poem.trim().split("\r\n\r\n");
-    let title = poem[0];
-    let stanzas = poem.slice(1);
     // normalize line endings
     poem = poem.replaceAll("\r\n", "\n").trim();
 
-    // create container to hold poem
     // split into title and stanzas
     let parts = poem.split("\n\n");
     let title = parts[0];
@@ -25,15 +20,12 @@ function addPoem(poem) {
     // create container
     let poemContainer = document.createElement("div");
 
-    // create title node with proper id
     // title
     let titleNode = document.createElement("h3");
-    titleNode.setAttribute("id", title);
     titleNode.setAttribute("id", title.replace(/\s+/g, "_")); // safer id
     titleNode.textContent = title;
     poemContainer.appendChild(titleNode);
 
-    // add each stanza
     // stanzas
     stanzas.forEach(stanza => {
 <<<<<<< HEAD
@@ -46,18 +38,15 @@ function addPoem(poem) {
       poemContainer.appendChild(stanzaNode);
     });
 
-    // add hr after poem
     // add to page
     document.body.appendChild(poemContainer);
     document.body.appendChild(document.createElement("hr"));
 
-    // add link to poem TOC
     // add TOC link
     let poemItem = document.createElement("li");
     let poemLink = document.createElement("a");
-    poemLink.setAttribute("href", `#${title}`);
     poemLink.setAttribute("href", `#${title.replace(/\s+/g, "_")}`);
     poemLink.textContent = title;
     poemItem.appendChild(poemLink);
     poemList.appendChild(poemItem);
-}}
+}
