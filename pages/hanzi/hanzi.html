@@ -19,19 +19,119 @@
   height: 300px;
 }
 
+.button-grid {
+  width: 200px;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr); /* Creates 3 equal-width columns */
+  gap: 5px; /* Adds space between grid items (buttons) */
+  padding: 5px; /* Optional: adds padding around the entire grid */
+}
 
+.button-grid button {
+  padding: 5px;
+  font-size: 16px;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.button-grid button:hover {
+  background-color: #0056b3;
+}
+
+.consonants button {
+  background-color: #782a4e;
+}
+
+.vowels button {
+  background-color: #3f5c27;
+}
+
+.finals button {
+  background-color: #27325c;
+}
+
+.tones button {
+  background-color: #363636;
+}
 
   </style>
 </head>
 <body>
 <h3>hanzi</h3>
 <span id="question"></span>
-<div>
-  <button id="pinyinBtn">Show pinyin</button>
-  <span id="pinyin"></span>
+
+
+
+<div class="button-grid consonants">
+  <button>b</button>
+  <button>p</button>
+  <button>m</button>
+  <button>f</button>
+  <div></div><div></div>
+  
+  <button>d</button>
+  <button>t</button>
+  <button>n</button>
+  <button>l</button>
+  <div></div><div></div>
+
+  <button>g</button>
+  <button>k</button>
+  <button>h</button>
+  <div></div><div></div><div></div>
+
+  <button>j</button>
+  <button>q</button>
+  <button>x</button>
+  <button>z</button>
+  <button>c</button>
+  <button>s</button>
+
+  <button>zh</button>
+  <button>ch</button>
+  <button>sh</button>
+  <button>r</button>
+  <div></div><div></div>
+  
+  <button>y</button>
+  <button>w</button>
+  <div></div><div></div><div></div><div></div>
 </div>
-<input id="characterEntry" type="text" maxlength="1">
+
+<div class="button-grid vowels">
+  <button>a</button>
+  <button>o</button>
+  <button>e</button>
+  <button>i</button>
+  <button>u</button>
+  <button>ü</button>
+</div>
+
+<div class="button-grid finals">
+  <button>n</button>
+  <button>ng</button>
+  <button>r</button>
+</div>
+
+<div class="button-grid tones">
+  <button>1</button>
+  <button>2</button>
+  <button>3</button>
+  <button>4</button>
+  <button>0</button>
+</div>
+
+<button id="clearPinyinBtn">Clear</button>
 <button id="submitBtn">Submit</button>
+<button id="pinyinBtn">Give Up =(</button>
+
+<div>
+  Pinyin: <span id="pinyin"> </span>
+</div>
+
 <div id="wrapper">
 	<canvas id="canvas" width="300" height="300"></canvas>
 	<embed id="animation" src="./common_svgs/我.svg" type="image/svg+xml" style="visibility:hidden; position:absolute; top:0; left:0; width:300px; height:300px; pointer-events:none; opacity:0.3;">
@@ -51,6 +151,20 @@
 
 <script>
 const { pinyin } = pinyinPro;
+
+
+
+const gridButtons = document.querySelectorAll('.button-grid button');
+const pinyinEl = document.getElementById("pinyin");
+
+
+gridButtons.forEach(button => {
+  button.onclick = () => {
+    pinyinEl.innerText += button.textContent;
+  }
+});
+
+
 
   // Track strokes
   let resultEl = document.getElementById("result")
@@ -179,23 +293,9 @@ function cleardraw() {
 };
 
 document.getElementById("clearBtn").onclick = cleardraw;
-
-document.getElementById("submitBtn").onclick = async () => {
-  const chr = document.getElementById("characterEntry").value
-  const path = `./common_svgs/${chr}.svg`;
-
-  try {
-    const res = await fetch(path, { method: "HEAD" });
-    if (res.ok) {
-      document.getElementById("animation").setAttribute("src", path);
-    } else {
-      console.log("SVG not found:", path);
-    }
-  } catch {
-    console.log("Error fetching:", path);
-  }
+document.getElementById("clearPinyinBtn").onclick = () => {
+  document.getElementById("pinyin").innerText = ""
 }
-
 
 let matcher = null;
 
@@ -272,7 +372,7 @@ async function init() {
 
 	document.getElementById("pinyinBtn").onclick = function() {
       const pinyinEl = document.getElementById("pinyin");
-      pinyinEl.innerText = pinyin(answer, { tone: true });
+      pinyinEl.innerText = pinyin(answer, { toneType: 'num' });
 	};
 
 	document.getElementById("showChr").addEventListener("change", function() {
@@ -286,6 +386,14 @@ async function init() {
 	  }
 	});
 	
+	document.getElementById("submitBtn").onclick = () => {
+	  const pinyinEl = document.getElementById("pinyin");
+	  if (pinyin(answer, { toneType: 'num' }) === pinyinEl.innerText) {
+	    console.log("Good job on the pinyin!");
+      } else {
+	    console.log("haha idiot");
+	  }
+	}
 }
 
 init();
