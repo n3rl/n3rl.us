@@ -28,7 +28,7 @@
 }
 
 .button-grid button {
-  padding: 5px;
+  padding: 4px;
   font-size: 16px;
   color: white;
   border: none;
@@ -57,14 +57,66 @@
   background-color: #363636;
 }
 
+
+.button-grid button:disabled {
+    background-color: #cccccc; /* Gray background */
+    color: #666666;             /* Darker text color */
+    cursor: not-allowed;        /* "Not allowed" cursor icon */
+    opacity: 0.6;               /* Reduced opacity to visually indicate inactivity */
+}
+
+.button-grid button:hover:not(:disabled) {
+    background-color: #0056b3;
+}
+
+
+
+
+.main-layout {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+#canvas-area {
+  flex: 0 0 auto;
+}
+
+#pinyin-area {
+  flex: 1;
+}
+
+#wrapper {
+  position: relative;
+}
+
   </style>
 </head>
 <body>
 <h3>hanzi</h3>
 <span id="question"></span>
 
+<div class="main-layout">
+  <!-- Left: canvas + controls -->
+  <div id="canvas-area">
+    <div id="wrapper">
+      <canvas id="canvas" width="300" height="300"></canvas>
+      <embed id="animation" src="./common_svgs/我.svg" type="image/svg+xml"
+        style="visibility:hidden; position:absolute; top:0; left:0; width:300px; height:300px; pointer-events:none; opacity:0.3;">
+    </div>
 
+    <div id="controls">
+      <button id="checkBtn">Check</button>
+      <button id="clearBtn">Clear</button>
+      <button id="undoBtn">Undo</button>
+      <button id="replayBtn">Replay</button>
+      <input id="showChr" type="checkbox"> show/hide character
+    </div>
+	<div>Predicted: <span id="result"></span></div>
+  </div>
 
+  <!-- Right: button grids -->
+  <div id="pinyin-area">
 <div class="button-grid consonants">
   <button>b</button>
   <button>p</button>
@@ -124,27 +176,16 @@
   <button>0</button>
 </div>
 
-<button id="clearPinyinBtn">Clear</button>
-<button id="submitBtn">Submit</button>
-<button id="pinyinBtn">Give Up =(</button>
+    <button id="clearPinyinBtn">Clear</button>
+    <button id="submitBtn">Submit</button>
+    <button id="pinyinBtn">Give Up =(</button>
 
-<div>
-  Pinyin: <span id="pinyin"> </span>
+    <div>Pinyin: <span id="pinyin"></span></div>
+    <div id="result"></div>
+  </div>
 </div>
 
-<div id="wrapper">
-	<canvas id="canvas" width="300" height="300"></canvas>
-	<embed id="animation" src="./common_svgs/我.svg" type="image/svg+xml" style="visibility:hidden; position:absolute; top:0; left:0; width:300px; height:300px; pointer-events:none; opacity:0.3;">
-</div>
-<div id="controls">
-  <button id="checkBtn">Check</button>
-  <button id="clearBtn">Clear</button>
-  <button id="undoBtn">Undo</button>
-  <button id="replayBtn">Replay</button>
-  <input id="showChr" type="checkbox"> show/hide character
-</div>
-
-<div id="result"></div>
+<button id="nextBtn">Next</button>
 
 <script src="hanzilookup.min.js"></script>
 <script src="https://unpkg.com/pinyin-pro"></script>
@@ -152,7 +193,8 @@
 <script>
 const { pinyin } = pinyinPro;
 
-
+// correct hanzi/pinyin, incorrect hanzi/pinyin
+var score = [0, 0]
 
 const gridButtons = document.querySelectorAll('.button-grid button');
 const pinyinEl = document.getElementById("pinyin");
@@ -292,9 +334,14 @@ function cleardraw() {
   resultEl.innerText = ''; 
 };
 
+var giveUpPinyin = false;
+var giveUpHanzi = false;
+var correctPinyin = false;
+var correctHanzi = false;
+
 document.getElementById("clearBtn").onclick = cleardraw;
 document.getElementById("clearPinyinBtn").onclick = () => {
-  document.getElementById("pinyin").innerText = ""
+  if (!giveUpPinyin && !correctPinyin) document.getElementById("pinyin").innerText = "";
 }
 
 let matcher = null;
@@ -349,6 +396,13 @@ async function init() {
     }
 	
 	function setupQuestion() {
+		giveUpPinyin = false;
+		giveUpHanzi = false;
+		correctHanzi = false;
+		correctPinyin = false;
+	    gridButtons.forEach(button => {
+	      button.disabled = false;
+	    });
 	    const next = nextQuestion();
         if (next) {
             ([question, answer] = next);
@@ -358,7 +412,17 @@ async function init() {
 		document.getElementById("question").innerText = question;
 		document.getElementById("showChr").checked = false;
 		document.getElementById("pinyin").innerText = '';
+		
+		const anim = document.getElementById("animation");
+		anim.style.visibility = "hidden";
+		document.getElementById("canvas-area").style.background = ""
+		document.getElementById("pinyin-area").style.background = ""
+		
+		document.getElementById("nextBtn").disabled = true;
+
 	};
+	
+	document.getElementById("nextBtn").onclick = setupQuestion;
 	
 	setupQuestion();
 	
@@ -366,21 +430,55 @@ async function init() {
       const resultEl = document.getElementById("result");
       if (resultEl.innerText[0] === answer) {
         console.log("success!")
-		setupQuestion();
-      }
+		correctHanzi = true;
+		if (correctPinyin || giveUpPinyin) {
+		  document.getElementById("nextBtn").disabled = false;
+		}
+		if (!giveUpHanzi) {
+		  document.getElementById("canvas-area").style.background = "#189229"
+		}
+		if (giveUpHanzi) {
+		  document.getElementById("canvas-area").style.background = "#a71b1b";
+		}
+      } else {
+	    console.log("you suck at writing hanzi");
+		showHanzi();
+	  }
 	};
-
-	document.getElementById("pinyinBtn").onclick = function() {
+	
+	function showPinyin() {
+	  if (correctPinyin) return;
+	  console.log("showing you the pinyin cause you're too stupid to remember it lmao");
       const pinyinEl = document.getElementById("pinyin");
       pinyinEl.innerText = pinyin(answer, { toneType: 'num' });
+	  giveUpPinyin = true;
+	  gridButtons.forEach(button => {
+	    button.disabled = true;
+	  });
+	  document.getElementById("pinyin-area").style.background = "#a71b1b";
+	  
+	  if (correctHanzi) document.getElementById("nextBtn").disabled = false;
+
 	};
 
+	document.getElementById("pinyinBtn").onclick = showPinyin
+
+	function showHanzi() {
+	  const anim = document.getElementById("animation");
+	  if (!correctHanzi) {
+        score[2] += 1;
+	    document.getElementById("canvas-area").style.background = "#ffd22e";
+	  }
+	  anim.style.visibility = "visible";
+	  const svg = document.getElementById("animation");
+	  svg.setAttribute("src", `./common_svgs/${answer}.svg`);
+	}
+
 	document.getElementById("showChr").addEventListener("change", function() {
+	  if (!correctHanzi) giveUpHanzi = true;
 	  const anim = document.getElementById("animation");
 	  if (this.checked) {
-		anim.style.visibility = "visible";
-		const svg = document.getElementById("animation");
-		svg.setAttribute("src", `./common_svgs/${answer}.svg`);
+        showHanzi();
 	  } else {
 		anim.style.visibility = "hidden";
 	  }
@@ -388,10 +486,22 @@ async function init() {
 	
 	document.getElementById("submitBtn").onclick = () => {
 	  const pinyinEl = document.getElementById("pinyin");
-	  if (pinyin(answer, { toneType: 'num' }) === pinyinEl.innerText) {
-	    console.log("Good job on the pinyin!");
+	  if (pinyin(answer, { toneType: 'num' }) === pinyinEl.innerText && !correctPinyin) {
+	    if (giveUpPinyin) {
+		  console.log("well you cheated on the pinyin...");
+		} else {
+	      console.log("Good job on the pinyin!");
+		  document.getElementById("pinyin-area").style.background = "#189229"
+		  score[1] += 1;
+		}
+	    gridButtons.forEach(button => {
+	      button.disabled = true;
+	    });
+		correctPinyin = true;
+		if (correctHanzi) document.getElementById("nextBtn").disabled = false;
       } else {
 	    console.log("haha idiot");
+		showPinyin();
 	  }
 	}
 }
