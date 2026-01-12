@@ -20,7 +20,7 @@
 }
 
 .button-grid {
-  width: 200px;
+  width: 400px;
   display: grid;
   grid-template-columns: repeat(6, 1fr); /* Creates 3 equal-width columns */
   gap: 5px; /* Adds space between grid items (buttons) */
@@ -35,6 +35,7 @@
   border-radius: 5px;
   cursor: pointer;
   transition: background-color 0.3s ease;
+  margin-right: 20px;
 }
 
 .button-grid button:hover {
@@ -90,29 +91,40 @@
   position: relative;
 }
 
+#checkBtn {
+  margin-right: 60px;
+  margin-bottom: 30px;
+}
+
+#submitBtn {
+  margin-right: 60px;
+  margin-bottom: 30px;
+}
+
   </style>
 </head>
 <body>
 <h3>hanzi</h3>
-<span id="question"></span>
+example sentences come from <a href="https://www.pinhok.com/kb/for-hsk/1138/hsk-1-example-sentences/">here</a>, any weirdness is their fault
+<button id="nextBtn">Next</button><span id="question"></span>
 
 <div class="main-layout">
   <!-- Left: canvas + controls -->
   <div id="canvas-area">
     <div id="wrapper">
       <canvas id="canvas" width="300" height="300"></canvas>
-      <embed id="animation" src="./common_svgs/我.svg" type="image/svg+xml"
+      <embed id="animation" type="image/svg+xml"
         style="visibility:hidden; position:absolute; top:0; left:0; width:300px; height:300px; pointer-events:none; opacity:0.3;">
     </div>
 
     <div id="controls">
       <button id="checkBtn">Check</button>
-      <button id="clearBtn">Clear</button>
       <button id="undoBtn">Undo</button>
-      <button id="replayBtn">Replay</button>
-      <input id="showChr" type="checkbox"> show/hide character
+      <button id="clearBtn">Clear</button>
     </div>
 	<div>Predicted: <span id="result"></span></div>
+	<input id="showChr" type="checkbox"> show/hide character
+    <button id="replayBtn">Replay</button>
   </div>
 
   <!-- Right: button grids -->
@@ -176,16 +188,15 @@
   <button>0</button>
 </div>
 
-    <button id="clearPinyinBtn">Clear</button>
     <button id="submitBtn">Submit</button>
-    <button id="pinyinBtn">Give Up =(</button>
+    <button id="clearPinyinBtn">Clear</button>
+    
+
 
     <div>Pinyin: <span id="pinyin"></span></div>
-    <div id="result"></div>
+    <button id="pinyinBtn">Give Up =(</button>
   </div>
 </div>
-
-<button id="nextBtn">Next</button>
 
 <script src="hanzilookup.min.js"></script>
 <script src="https://unpkg.com/pinyin-pro"></script>
@@ -441,7 +452,9 @@ async function init() {
 		  document.getElementById("canvas-area").style.background = "#a71b1b";
 		}
       } else {
+	    if (correctHanzi) return;
 	    console.log("you suck at writing hanzi");
+		giveUpHanzi = true;
 		showHanzi();
 	  }
 	};
@@ -472,6 +485,7 @@ async function init() {
 	  anim.style.visibility = "visible";
 	  const svg = document.getElementById("animation");
 	  svg.setAttribute("src", `./common_svgs/${answer}.svg`);
+	  document.getElementById("showChr").checked = true;
 	}
 
 	document.getElementById("showChr").addEventListener("change", function() {
@@ -479,8 +493,10 @@ async function init() {
 	  const anim = document.getElementById("animation");
 	  if (this.checked) {
         showHanzi();
+		document.getElementById("replayBtn").style.visibility = "";
 	  } else {
 		anim.style.visibility = "hidden";
+		document.getElementById("replayBtn").style.visibility = "hidden";
 	  }
 	});
 	
